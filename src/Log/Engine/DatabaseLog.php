@@ -11,6 +11,7 @@ namespace DatabaseLog\Log\Engine;
 
 use Cake\Log\Engine\BaseLog;
 use Cake\ORM\TableRegistry;
+use Cake\Routing\Router;
 
 /**
  * DatabaseLog Engine
@@ -49,6 +50,24 @@ class DatabaseLog extends BaseLog {
 		} elseif ($this->config('file')) {
 			$level = $this->config('file');
 		}
+		
+		$request = Router::getRequest();
+
+        if ($request) {
+            $context['headers'] = $_SERVER;
+
+        	if(!empty($request->getData()))
+	        	$context['data'] = $request->getData();
+
+        	if(!empty($request->getQueryParams()))
+	        	$context['query'] = $request->getQueryParams();
+
+            $session = $request->session();
+
+            if (!empty($session)) {
+                $context['user_id'] = $session->read('Auth.User.id');
+            }
+        }
 
 		return $this->Logs->log($level, $message, $context);
 	}
